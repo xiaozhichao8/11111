@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+   
+<mapper namespace="com.fh.shop.admin.mapper.emp.IEmpMapper">
+	<sql id="whereEmp">
+		<where>
+			<if test="ename !=null and ename !=''">
+				ename like concat('%',#{ename},'%')
+			</if>
+			<if test="sex !=null ">
+				and sex=#{sex}
+			</if>
+			<if test="mainPay !=null and mainPay>0">
+				and pay>=#{mainPay}
+			</if>
+			<if test="maxPay != null and maxPay>0">
+				and pay&lt;=#{maxPay}
+			</if>
+			<if test="startBirthday !=null and startBirthday!=''">
+				and birthday>=#{startBirthday}
+			</if>
+			<if test="endBirthday !=null and endBirthday !=''">
+				and birthday&lt;=#{endBirthday}
+			</if>
+		</where>
+	</sql>
+
+
+	<!--查询总条数  -->
+	<select id="countEmp" resultType="int">
+		select count(*) from t_emp <include refid="whereEmp"></include>
+	</select>
+	<!--查询单前页内容  -->
+	<select id="findEmpList" resultType="emp">
+		select t.* from
+		(
+		select id,ename,sex,birthday,pay from t_emp
+			<include refid="whereEmp"></include>
+		)t
+		<if test="orderColumn !=null and orderColumn !='' and orderDir !=null and orderDir!=''">
+				order by ${orderColumn} ${orderDir}
+			</if>
+		limit #{start},#{length}
+	</select>
+	<insert id="addEmp" parameterType="emp">
+		insert into t_emp(ename,sex,birthday,pay) values(#{ename},#{sex},#{birthday},#{pay})
+	</insert>
+	<!--修改  -->
+	<update id="updateEmp" parameterType="emp">
+		update t_emp set ename=#{ename},sex=#{sex},birthday=#{birthday},pay=#{pay} where id=#{id}
+	</update>
+	<!--删除  -->
+	<delete id="deleteEmp">
+		delete from t_emp where id=#{id}
+	</delete>
+</mapper>

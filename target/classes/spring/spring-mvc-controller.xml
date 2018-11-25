@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 对项目中的所有类进行扫描以完成Bean创建并进行自动注入。
+               支持 @Controller、@Service 以及 @Repository 和 @Component -->
+    <!-- 扫描项目中com.fh.shop.controller包下所有的类，从而使类中的@Controller注解生效 -->
+    <context:component-scan base-package="com.fh.shop.admin.controller"/>
+    
+     <!-- 访问静态资源 -->
+     <mvc:resources location="/js" mapping="/**"/>
+    
+    <!--
+        jsp视图解析器，对模型视图名称的解析，即在模型视图名称添加前后缀
+        如/view/welcome.jsp对应的视图名就是：welcome
+        这个类在视图解析器链中一定要定义在其他视图的后面，因为它始终会返回一个视图
+    -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/view/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    
+    
+    <!--自定义消息转换器的编码,解决后台传输json回前台时，中文乱码问题-->
+    <mvc:annotation-driven>
+        <mvc:message-converters register-defaults="true">
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=utf-8</value>
+                        <value>text/html;charset=utf-8</value>
+                        <!-- application 可以在任意 form 表单里面 enctype 属性默认找到 -->
+                        <value>application/x-www-form-urlencoded</value>
+                    </list>
+                </property>
+            </bean>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+	
+	<bean id="logAspect" class="com.fh.shop.admin.aspect.LogAspect"></bean>
+	
+	<aop:config>
+		<aop:aspect ref="logAspect">
+			<aop:pointcut expression="execution(* com.fh.shop.admin.controller..*.*(..))" id="logPointcut"/>
+			<aop:around method="doLog" pointcut-ref="logPointcut"/>
+		</aop:aspect>
+	</aop:config>
+
+
+</beans>
